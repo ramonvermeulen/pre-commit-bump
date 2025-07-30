@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// checkCmd represents the check command
 var checkCmd = &cobra.Command{
 	Use:   "check",
 	Short: "Check for available updates without modifying the \".pre-commit-config.yaml\" file",
