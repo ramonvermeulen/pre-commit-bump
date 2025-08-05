@@ -23,8 +23,8 @@ func init() {
 	updateCmd.Flags().BoolP(config.FlagNoSummary, "n", false, "Disable summary generation")
 	updateCmd.Flags().BoolP(config.FlagDryRun, "d", false, "Perform a dry run showing only the diff of the \".pre-commit-config.yaml\" file without modifying it")
 
-	config.BindFlag(updateCmd.PersistentFlags(), config.FlagNoSummary)
-	config.BindFlag(updateCmd.PersistentFlags(), config.FlagDryRun)
+	config.BindFlag(updateCmd.Flags(), config.FlagNoSummary)
+	config.BindFlag(updateCmd.Flags(), config.FlagDryRun)
 }
 
 func runUpdate(cmd *cobra.Command, args []string) {
@@ -37,7 +37,7 @@ func runUpdate(cmd *cobra.Command, args []string) {
 	cfg.Logger.Sugar().Debugf("Starting update command - config_path: %s, dry_run: %t, no_summary: %t",
 		cfg.ConfigPath, cfg.DryRun, cfg.NoSummary)
 
-	p := parser.NewParser()
+	p := parser.NewParser(cfg.Logger)
 	bmp := bumper.NewBumper(p, cfg)
 
 	if err := bmp.Update(); err != nil {

@@ -31,7 +31,7 @@ func runCheck(cmd *cobra.Command, args []string) {
 
 	cfg.Logger.Sugar().Debugf("Starting check command - config_path: %s", cfg.ConfigPath)
 
-	p := parser.NewParser()
+	p := parser.NewParser(cfg.Logger)
 	bmp := bumper.NewBumper(p, cfg)
 
 	if err := bmp.Check(); err != nil {

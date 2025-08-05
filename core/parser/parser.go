@@ -5,17 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
+	"go.uber.org/zap"
+
 	"github.com/goccy/go-yaml"
 )
 
 // Parser is responsible for parsing the pre-commit configuration file.
 // It provides methods to read and validate the configuration file.
-type Parser struct{}
+type Parser struct {
+	logger *zap.Logger
+}
 
 // NewParser creates a new instance of Parser.
 // It initializes the parser and returns a pointer to it.
-func NewParser() *Parser {
-	return &Parser{}
+func NewParser(logger *zap.Logger) *Parser {
+	return &Parser{logger: logger}
 }
 
 // ParseConfig reads and parses the pre-commit configuration file from the given path.
@@ -32,6 +36,7 @@ func (p *Parser) ParseConfig(configPath string) (*PreCommitConfig, error) {
 	}
 
 	var config PreCommitConfig
+	config.logger = p.logger
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse yaml: %w", err)
 	}
