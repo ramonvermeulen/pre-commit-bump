@@ -13,8 +13,9 @@ import (
 // Repo represents a single repository configuration in the pre-commit config file.
 // It contains the repository URL and the revision (branch, tag, or commit) to use
 type Repo struct {
-	Repo string `yaml:"repo"`
-	Rev  string `yaml:"rev"`
+	Repo   string `yaml:"repo"`
+	Rev    string `yaml:"rev"`
+	SemVer *SemanticVersion
 }
 
 // PreCommitConfig represents the entire pre-commit configuration file.
@@ -43,6 +44,16 @@ func (config *PreCommitConfig) Validate() error {
 	return nil
 }
 
+// PopulateSemVer populates the SemVer field of each Repo in the PreCommitConfig.
+// It parses the Rev field of each Repo and sets the SemVer field if the revision is a valid semantic version.
+func (config *PreCommitConfig) PopulateSemVer() {
+	for i := range config.Repos {
+		if semVer, ok := GetSemanticVersion(config.Repos[i].Rev); ok {
+			config.Repos[i].SemVer = &semVer
+		}
+	}
+}
+
 // ValidRepos filters out sentinel values from the Repos slice and returns a slice of valid Repo structs.
 // Sentinel values are "local" and "meta", which are not considered valid repositories.
 // This function is useful for excluding certain repositories that are not meant to be processed.
@@ -55,7 +66,7 @@ func (config *PreCommitConfig) ValidRepos() []Repo {
 			config.logger.Sugar().Debugf("Skipping sentinel repo: %s", repo.Repo)
 			continue
 		}
-		if _, ok := GetSemanticVersion(repo.Rev); !ok {
+		if repo.SemVer == nil {
 			config.logger.Sugar().Debugf("Skipping repo with invalid semantic version: %s, rev: %s", repo.Repo, repo.Rev)
 			continue
 		}

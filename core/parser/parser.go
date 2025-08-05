@@ -46,6 +46,8 @@ func (p *Parser) ParseConfig(configPath string) (*PreCommitConfig, error) {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
+	config.PopulateSemVer()
+
 	return &config, nil
 }
 
