@@ -33,7 +33,7 @@ func TestGetSemanticVersion(t *testing.T) {
 		},
 		{
 			name:    "valid version with url prefix",
-			version: "https://github.com/some-owner/some-repo.git?rev=v1.9.1",
+			version: "https://github.com/some-owner/some-repo.git?rev=v1.9.1&some-param=some-value",
 			expected: SemanticVersion{
 				Major: 1,
 				Minor: 9,
