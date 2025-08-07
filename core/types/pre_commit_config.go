@@ -20,9 +20,9 @@ type Repo struct {
 // GetVendor determines the vendor of the repository based on its URL.
 func (r *Repo) GetVendor() string {
 	vendor := ""
-	if strings.Contains(r.Repo, "github.com") {
+	if strings.Contains(r.Repo, config.VendorGitHubHost) {
 		vendor = config.VendorGitHub
-	} else if strings.Contains(r.Repo, "gitlab.com") {
+	} else if strings.Contains(r.Repo, config.VendorGitLabHost) {
 		vendor = config.VendorGitLab
 	}
 	return vendor

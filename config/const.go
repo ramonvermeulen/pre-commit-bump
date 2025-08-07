@@ -19,8 +19,10 @@ const (
 
 // Supported vendors for pre-commit hooks
 const (
-	VendorGitHub = "github"
-	VendorGitLab = "gitlab"
+	VendorGitHub     = "github"
+	VendorGitHubHost = "github.com"
+	VendorGitLab     = "gitlab"
+	VendorGitLabHost = "gitlab.com"
 )
 
 // Regex patterns and other constants used within the pre-commit bumper tool

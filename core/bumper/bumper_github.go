@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ramonvermeulen/pre-commit-bump/config"
+
 	"github.com/ramonvermeulen/pre-commit-bump/core/types"
 )
 
@@ -49,7 +51,7 @@ func (g *GithubBumper) GetLatestVersion(repo *types.Repo) (*types.SemanticVersio
 // fetchTags retrieves the tags from a GitHub repository using the GitHub API.
 // It returns a slice of GitHubTag or an error if the API call fails.
 func (g *GithubBumper) fetchTags(repoPath string) ([]GitHubTag, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/git/refs/tags", repoPath)
+	url := fmt.Sprintf("https://api.%s/repos/%s/git/refs/tags", config.VendorGitHubHost, repoPath)
 
 	resp, err := g.client.Get(url)
 	if err != nil {
@@ -80,10 +82,9 @@ func extractGitHubRepo(repoURL string) string {
 	repoURL = strings.TrimSuffix(repoURL, "/")
 
 	var repoPath string
-	if idx := strings.Index(repoURL, "github.com/"); idx != -1 {
-		repoPath = repoURL[idx+len("github.com/"):]
-	} else if idx := strings.Index(repoURL, "github.com:"); idx != -1 {
-		repoPath = repoURL[idx+len("github.com:"):]
+	if idx := strings.Index(repoURL, config.VendorGitHubHost); idx != -1 {
+		// +1 works for both https and ssh because of the `:` or `/` after the host
+		repoPath = repoURL[idx+len(config.VendorGitHubHost)+1:]
 	}
 
 	return repoPath

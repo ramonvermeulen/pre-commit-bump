@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ramonvermeulen/pre-commit-bump/config"
+
 	"github.com/ramonvermeulen/pre-commit-bump/core/types"
 )
 
@@ -38,7 +40,7 @@ func (gt GitLabTag) GetTagName() string {
 // and returns the latest semantic version found or an error if no valid semantic versions are present.
 func (g *GitLabBumper) GetLatestVersion(repo *types.Repo) (*types.SemanticVersion, error) {
 	gitlabRepo := extractGitLabRepo(repo.Repo)
-	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/repository/tags", url2.PathEscape(gitlabRepo))
+	url := fmt.Sprintf("https://%s/api/v4/projects/%s/repository/tags", config.VendorGitLabHost, url2.PathEscape(gitlabRepo))
 
 	tags, err := g.fetchTags(url)
 	if err != nil {
@@ -79,10 +81,10 @@ func extractGitLabRepo(repoURL string) string {
 	repoURL = strings.TrimSuffix(repoURL, "/")
 
 	var repoPath string
-	if idx := strings.Index(repoURL, "gitlab.com/"); idx != -1 {
-		repoPath = repoURL[idx+len("gitlab.com/"):]
-	} else if idx := strings.Index(repoURL, "gitlab.com:"); idx != -1 {
-		repoPath = repoURL[idx+len("gitlab.com:"):]
+
+	if idx := strings.Index(repoURL, config.VendorGitLabHost); idx != -1 {
+		// +1 works for both https and ssh because of the `:` or `/` after the host
+		repoPath = repoURL[idx+len(config.VendorGitHubHost)+1:]
 	}
 
 	return repoPath
