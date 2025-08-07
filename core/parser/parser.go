@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ramonvermeulen/pre-commit-bump/core/types"
+
 	"go.uber.org/zap"
 
 	"github.com/goccy/go-yaml"
@@ -24,7 +26,7 @@ func NewParser(logger *zap.Logger) *Parser {
 
 // ParseConfig reads and parses the pre-commit configuration file from the given path.
 // It returns a PreCommitConfig struct or an error if the parsing fails.
-func (p *Parser) ParseConfig(pCfgPath string) (*PreCommitConfig, error) {
+func (p *Parser) ParseConfig(pCfgPath string) (*types.PreCommitConfig, error) {
 	absPath, err := p.validatePath(pCfgPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to validate pCfg path: %w", err)
@@ -35,8 +37,8 @@ func (p *Parser) ParseConfig(pCfgPath string) (*PreCommitConfig, error) {
 		return nil, fmt.Errorf("failed to read pCfg file: %w", err)
 	}
 
-	var pCfg PreCommitConfig
-	pCfg.logger = p.logger
+	var pCfg types.PreCommitConfig
+	pCfg.Logger = p.logger
 	if err := yaml.Unmarshal(data, &pCfg); err != nil {
 		return nil, fmt.Errorf("failed to parse yaml: %w", err)
 	}

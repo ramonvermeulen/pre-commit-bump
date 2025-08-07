@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ramonvermeulen/pre-commit-bump/core/parser"
+	"github.com/ramonvermeulen/pre-commit-bump/core/types"
 )
 
 // GithubBumper is a struct that implements the RepoBumper interface for GitHub repositories.
@@ -33,9 +33,9 @@ func (gt GitHubTag) GetTagName() string {
 }
 
 // GetLatestVersion retrieves the latest semantic version from a GitHub repository.
-// It takes a pointer to a parser.Repo as input, fetches the tags using the GitHub API.
+// It takes a pointer to a types.Repo as input, fetches the tags using the GitHub API.
 // And returns the latest semantic version found or an error if no valid semantic versions are present.
-func (g *GithubBumper) GetLatestVersion(repo *parser.Repo) (*parser.SemanticVersion, error) {
+func (g *GithubBumper) GetLatestVersion(repo *types.Repo) (*types.SemanticVersion, error) {
 	repoPath := extractGitHubRepo(repo.Repo)
 
 	tags, err := g.fetchTags(repoPath)

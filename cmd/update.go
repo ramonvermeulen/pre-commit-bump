@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
 	"github.com/ramonvermeulen/pre-commit-bump/core/bumper"
+	"github.com/ramonvermeulen/pre-commit-bump/core/io"
 	"github.com/ramonvermeulen/pre-commit-bump/core/parser"
 	"github.com/spf13/cobra"
 )
@@ -37,8 +39,14 @@ func runUpdate(cmd *cobra.Command, args []string) {
 	cfg.Logger.Sugar().Debugf("Starting update command - config_path: %s, dry_run: %t, no_summary: %t",
 		cfg.PreCommitConfigPath, cfg.DryRun, cfg.NoSummary)
 
+	filesystem := io.NewOSFileSystem()
+	httpClient := &http.Client{
+		Timeout: config.DefaultHTTPTimeout,
+	}
+	resultWriter := io.NewResultWriter(filesystem, cfg.Logger)
 	p := parser.NewParser(cfg.Logger)
-	bmp := bumper.NewBumper(p, cfg)
+
+	bmp := bumper.NewBumper(p, cfg, resultWriter, httpClient)
 
 	if err := bmp.Update(); err != nil {
 		fmt.Fprintf(os.Stderr, "Update failed: %v\n", err)

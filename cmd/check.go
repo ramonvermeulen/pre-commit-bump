@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
 	"github.com/ramonvermeulen/pre-commit-bump/core/bumper"
+	"github.com/ramonvermeulen/pre-commit-bump/core/io"
 	"github.com/ramonvermeulen/pre-commit-bump/core/parser"
 	"github.com/spf13/cobra"
 )
@@ -31,8 +33,14 @@ func runCheck(cmd *cobra.Command, args []string) {
 
 	cfg.Logger.Sugar().Debugf("Starting check command - config_path: %s", cfg.PreCommitConfigPath)
 
+	filesystem := io.NewOSFileSystem()
+	httpClient := &http.Client{
+		Timeout: config.DefaultHTTPTimeout,
+	}
+	resultWriter := io.NewResultWriter(filesystem, cfg.Logger)
 	p := parser.NewParser(cfg.Logger)
-	bmp := bumper.NewBumper(p, cfg)
+
+	bmp := bumper.NewBumper(p, cfg, resultWriter, httpClient)
 
 	if err := bmp.Check(); err != nil {
 		fmt.Fprintf(os.Stderr, "Check failed: %v\n", err)

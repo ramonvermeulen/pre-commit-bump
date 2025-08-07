@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ramonvermeulen/pre-commit-bump/core/parser"
+	"github.com/ramonvermeulen/pre-commit-bump/core/types"
 )
 
 // GitLabBumper is a struct that implements the RepoBumper interface for GitLab repositories.
@@ -36,7 +36,7 @@ func (gt GitLabTag) GetTagName() string {
 // GetLatestVersion retrieves the latest semantic version from a GitLab repository.
 // It takes the repository URL as input, fetches the tags using the GitLab API,
 // and returns the latest semantic version found or an error if no valid semantic versions are present.
-func (g *GitLabBumper) GetLatestVersion(repo *parser.Repo) (*parser.SemanticVersion, error) {
+func (g *GitLabBumper) GetLatestVersion(repo *types.Repo) (*types.SemanticVersion, error) {
 	gitlabRepo := extractGitLabRepo(repo.Repo)
 	url := fmt.Sprintf("https://gitlab.com/api/v4/projects/%s/repository/tags", url2.PathEscape(gitlabRepo))
 
