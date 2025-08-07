@@ -138,6 +138,26 @@ func (s *SemanticVersion) String() string {
 	return version
 }
 
+// IsNewerVersionThan compares the current SemanticVersion with another SemanticVersion.
+// It returns true if the current version is newer than the other version, false otherwise.
+func (s *SemanticVersion) IsNewerVersionThan(other *SemanticVersion) bool {
+	if other == nil {
+		return false
+	}
+
+	if s.Major > other.Major {
+		return true
+	}
+	if s.Major == other.Major && s.Minor > other.Minor {
+		return true
+	}
+	if s.Major == other.Major && s.Minor == other.Minor && s.Patch > other.Patch {
+		return true
+	}
+
+	return false
+}
+
 func getGroup(re *regexp.Regexp, match []string, name string) string {
 	index := re.SubexpIndex(name)
 	if index == -1 || index >= len(match) {

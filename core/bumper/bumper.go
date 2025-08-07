@@ -118,7 +118,7 @@ func (b *Bumper) checkSingleRepo(repo parser.Repo, updater RepoBumper) UpdateRes
 		}
 	}
 
-	updateRequired := isNewerVersion(repo.SemVer, latestVersion)
+	updateRequired := latestVersion.IsNewerVersionThan(repo.SemVer)
 
 	return UpdateResult{
 		Repo:           repo,
@@ -261,7 +261,7 @@ func findLatestVersion[T TagProvider](tags []T, repo *parser.Repo) (*parser.Sema
 			continue
 		}
 
-		if latest == nil || isNewerVersion(latest, semVer) {
+		if latest == nil || semVer.IsNewerVersionThan(latest) {
 			latest = semVer
 		}
 	}
@@ -271,23 +271,4 @@ func findLatestVersion[T TagProvider](tags []T, repo *parser.Repo) (*parser.Sema
 	}
 
 	return latest, nil
-}
-
-// isNewerVersion checks if the latest version is newer than the current version.
-func isNewerVersion(current, latest *parser.SemanticVersion) bool {
-	if current == nil || latest == nil {
-		return false
-	}
-
-	if latest.Major > current.Major {
-		return true
-	}
-	if latest.Major == current.Major && latest.Minor > current.Minor {
-		return true
-	}
-	if latest.Major == current.Major && latest.Minor == current.Minor && latest.Patch > current.Patch {
-		return true
-	}
-
-	return false
 }
