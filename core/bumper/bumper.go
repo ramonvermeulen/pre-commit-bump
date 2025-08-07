@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
@@ -86,27 +87,48 @@ func (b *Bumper) Update() error {
 	return b.processUpdateResults(results)
 }
 
+// checkReposForUpdates iterates through the repositories in the pre-commit configuration
+// and checks for updates using the appropriate RepoBumper based on the vendor.
+// it uses a goroutine for each repository to perform the check concurrently.
 func (b *Bumper) checkReposForUpdates(repos []parser.Repo) []UpdateResult {
-	updaters := map[string]RepoBumper{
+	repositoryUpdaters := map[string]RepoBumper{
 		config.VendorGitHub: NewGithubBumper(b.client),
 		config.VendorGitLab: NewGitLabBumper(b.client),
 	}
-	results := make([]UpdateResult, 0, len(repos))
 
-	for _, repo := range repos {
-		vendor := repo.GetVendor()
-		updater, exists := updaters[vendor]
-		if !exists {
-			b.cfg.Logger.Sugar().Warnf("No updater found for vendor: %s, skipping repo: %s", vendor, repo.Repo)
+	updateResults := make([]UpdateResult, len(repos))
+	var waitGroup sync.WaitGroup
+
+	for repoIndex, currentRepo := range repos {
+		vendor := currentRepo.GetVendor()
+		updater, vendorSupported := repositoryUpdaters[vendor]
+
+		if !vendorSupported {
+			b.cfg.Logger.Sugar().Warnf("No updater found for vendor: %s, skipping repo: %s", vendor, currentRepo.Repo)
+			updateResults[repoIndex] = UpdateResult{
+				Repo:  currentRepo,
+				Error: fmt.Errorf("no updater found for vendor: %s", vendor),
+			}
 			continue
 		}
-		result := b.checkSingleRepo(repo, updater)
-		results = append(results, result)
+
+		waitGroup.Add(1)
+		go b.checkRepoAsync(&waitGroup, updateResults, repoIndex, currentRepo, updater)
 	}
 
-	return results
+	waitGroup.Wait()
+
+	return updateResults
 }
 
+// checkRepoAsync checks a single repository for updates and is intended to be called concurrently as a goroutine.
+func (b *Bumper) checkRepoAsync(waitGroup *sync.WaitGroup, results []UpdateResult, index int, repo parser.Repo, updater RepoBumper) {
+	defer waitGroup.Done()
+	results[index] = b.checkSingleRepo(repo, updater)
+}
+
+// checkSingleRepo checks a single repository for updates.
+// It retrieves the latest version using the provided RepoBumper and compares it with the current version.
 func (b *Bumper) checkSingleRepo(repo parser.Repo, updater RepoBumper) UpdateResult {
 	b.cfg.Logger.Sugar().Debugf("Checking repo: %s, current version: %s", repo.Repo, repo.Rev)
 
@@ -127,6 +149,9 @@ func (b *Bumper) checkSingleRepo(repo parser.Repo, updater RepoBumper) UpdateRes
 	}
 }
 
+// writeSummary generates a summary of the updates and writes it to a markdown file.
+// It includes the repository name, current version, latest version, and a link to the changelog.
+// If no updates are available, it indicates that in the summary.
 func (b *Bumper) writeSummary(results []UpdateResult) error {
 	summaryPath := "summary.md"
 
@@ -147,6 +172,8 @@ func (b *Bumper) writeSummary(results []UpdateResult) error {
 	return os.WriteFile(summaryPath, []byte(buf.String()), 0644)
 }
 
+// writePreCommitChanges updates the pre-commit configuration file with the latest versions.
+// It reads the file, replaces the old versions with the new ones, and writes the changes back to the file.
 func (b *Bumper) writePreCommitChanges(results []UpdateResult) error {
 	data, err := os.ReadFile(b.cfg.PreCommitConfigPath)
 	if err != nil {
@@ -203,6 +230,8 @@ func (b *Bumper) processResults(results []UpdateResult) (bool, error) {
 	return hasUpdates, nil
 }
 
+// processCheckResults processes the results of the check for updates.
+// It checks if any updates are available and returns an error if so.
 func (b *Bumper) processCheckResults(results []UpdateResult) error {
 	hasUpdates, err := b.processResults(results)
 	if err != nil {
@@ -215,6 +244,8 @@ func (b *Bumper) processCheckResults(results []UpdateResult) error {
 	return nil
 }
 
+// processUpdateResults processes the results of the update check.
+// It writes the changes to the pre-commit configuration file and generates a summary if requested.
 func (b *Bumper) processUpdateResults(results []UpdateResult) error {
 	hasUpdates, err := b.processResults(results)
 	if err != nil {

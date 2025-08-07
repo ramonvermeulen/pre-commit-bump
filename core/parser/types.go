@@ -44,12 +44,12 @@ func (config *PreCommitConfig) Validate() error {
 		return fmt.Errorf("no repositories found in config")
 	}
 
-	for _, repo := range config.Repos {
+	for _, repo := range config.ValidRepos() {
 		if repo.Repo == "" {
 			return fmt.Errorf("repository URL is empty")
 		}
 		if repo.Rev == "" {
-			return fmt.Errorf("revision is empty for repository %s", repo.Repo)
+			return fmt.Errorf("revision is empty for repository: %s", repo.Repo)
 		}
 	}
 
