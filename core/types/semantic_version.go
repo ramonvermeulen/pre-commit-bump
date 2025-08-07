@@ -76,6 +76,45 @@ func (s *SemanticVersion) IsNewerVersionThan(other *SemanticVersion) bool {
 	return false
 }
 
+// GetBumpType determines the type of version bump between the current SemanticVersion and another SemanticVersion.
+// It returns "major", "minor", or "patch" if the current version is newer than the other version.
+func (s *SemanticVersion) GetBumpType(other *SemanticVersion) string {
+	if other == nil {
+		return ""
+	}
+
+	if s.Major > other.Major {
+		return "major"
+	}
+	if s.Major == other.Major && s.Minor > other.Minor {
+		return "minor"
+	}
+	if s.Major == other.Major && s.Minor == other.Minor && s.Patch > other.Patch {
+		return "patch"
+	}
+
+	return ""
+}
+
+// IsAllowedBump checks if the current SemanticVersion is allowed to be bumped to the other SemanticVersion
+// based on the allowed bump type. It returns true if the bump is allowed, false otherwise.
+func (s *SemanticVersion) IsAllowedBump(other *SemanticVersion, allowedBumpType string) bool {
+	if allowedBumpType == "major" {
+		return true
+	}
+
+	bumpType := s.GetBumpType(other)
+
+	switch allowedBumpType {
+	case "minor":
+		return bumpType == "minor" || bumpType == "patch"
+	case "patch":
+		return bumpType == "patch"
+	}
+
+	return false
+}
+
 func getGroup(re *regexp.Regexp, match []string, name string) string {
 	index := re.SubexpIndex(name)
 	if index == -1 || index >= len(match) {

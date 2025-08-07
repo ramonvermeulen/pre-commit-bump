@@ -17,6 +17,9 @@ type Config struct {
 	// PreCommitConfigPath is the path to the pre-commit configuration file
 	PreCommitConfigPath string
 
+	// Allow specifies the version bump type to allow (major, minor, patch)
+	Allow string
+
 	// NoSummary disables summary generation (update command only)
 	NoSummary bool
 
@@ -65,12 +68,14 @@ func newLogger(level zapcore.Level) *zap.Logger {
 // FromViper creates a Config from viper values
 func FromViper() (*Config, error) {
 	configPath := viper.GetString(FlagConfig)
+	allow := viper.GetString(FlagAllow)
 	noSummary := viper.GetBool(FlagNoSummary)
 	dryRun := viper.GetBool(FlagDryRun)
 	logLevel := getLogLevel()
 
 	return &Config{
 		PreCommitConfigPath: configPath,
+		Allow:               allow,
 		NoSummary:           noSummary,
 		DryRun:              dryRun,
 		LogLevel:            logLevel,

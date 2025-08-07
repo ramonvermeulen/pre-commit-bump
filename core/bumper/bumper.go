@@ -133,7 +133,13 @@ func (b *Bumper) checkSingleRepo(repo types.Repo, updater RepoBumper) types.Upda
 		}
 	}
 
-	updateRequired := latestVersion.IsNewerVersionThan(repo.SemVer)
+	updateRequired := latestVersion.IsAllowedBump(repo.SemVer, b.cfg.Allow)
+
+	if latestVersion.IsNewerVersionThan(repo.SemVer) && !updateRequired {
+		bumpType := latestVersion.GetBumpType(repo.SemVer)
+		b.cfg.Logger.Sugar().Debugf("Update available for %s (%s -> %s) but %s bump not allowed (only %s allowed)",
+			repo.Repo, repo.Rev, latestVersion.String(), bumpType, b.cfg.Allow)
+	}
 
 	return types.UpdateResult{
 		Repo:           repo,
