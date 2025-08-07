@@ -43,7 +43,7 @@ func (g *GithubBumper) GetLatestVersion(repo *parser.Repo) (*parser.SemanticVers
 		return nil, err
 	}
 
-	return findLatestVersionGeneric(tags, repo)
+	return findLatestVersion(tags, repo)
 }
 
 // fetchTags retrieves the tags from a GitHub repository using the GitHub API.

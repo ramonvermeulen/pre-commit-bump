@@ -61,7 +61,7 @@ func (config *PreCommitConfig) Validate() error {
 func (config *PreCommitConfig) PopulateSemVer() {
 	for i := range config.Repos {
 		if semVer, ok := GetSemanticVersion(config.Repos[i].Rev); ok {
-			config.Repos[i].SemVer = &semVer
+			config.Repos[i].SemVer = semVer
 		}
 	}
 }
@@ -100,12 +100,11 @@ type SemanticVersion struct {
 }
 
 // GetSemanticVersion parses a version string and return a SemanticVersion struct if it matches the semantic versioning format.
-func GetSemanticVersion(version string) (SemanticVersion, bool) {
-	// TODO(ramon): Maybe return a pointer here instead of by value?
+func GetSemanticVersion(version string) (*SemanticVersion, bool) {
 	re := regexp.MustCompile(config.ReSemanticVersion)
 	match := re.FindStringSubmatch(version)
 	if match == nil {
-		return SemanticVersion{}, false
+		return &SemanticVersion{}, false
 	}
 
 	major, err1 := strconv.Atoi(getGroup(re, match, "major"))
@@ -115,16 +114,28 @@ func GetSemanticVersion(version string) (SemanticVersion, bool) {
 	buildMetadata := getGroup(re, match, "buildmetadata")
 
 	if err1 != nil || err2 != nil || err3 != nil {
-		return SemanticVersion{}, false
+		return &SemanticVersion{}, false
 	}
 
-	return SemanticVersion{
+	return &SemanticVersion{
 		Major:         major,
 		Minor:         minor,
 		Patch:         patch,
 		PreRelease:    preRelease,
 		BuildMetaData: buildMetadata,
 	}, true
+}
+
+// String returns the string representation of the SemanticVersion in the format "major.minor.patch-preRelease+buildMetaData".
+func (s *SemanticVersion) String() string {
+	version := fmt.Sprintf("%d.%d.%d", s.Major, s.Minor, s.Patch)
+	if s.PreRelease != "" {
+		version += "-" + s.PreRelease
+	}
+	if s.BuildMetaData != "" {
+		version += "+" + s.BuildMetaData
+	}
+	return version
 }
 
 func getGroup(re *regexp.Regexp, match []string, name string) string {

@@ -24,31 +24,31 @@ func NewParser(logger *zap.Logger) *Parser {
 
 // ParseConfig reads and parses the pre-commit configuration file from the given path.
 // It returns a PreCommitConfig struct or an error if the parsing fails.
-func (p *Parser) ParseConfig(configPath string) (*PreCommitConfig, error) {
-	absPath, err := p.validatePath(configPath)
+func (p *Parser) ParseConfig(pCfgPath string) (*PreCommitConfig, error) {
+	absPath, err := p.validatePath(pCfgPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to validate config path: %w", err)
+		return nil, fmt.Errorf("failed to validate pCfg path: %w", err)
 	}
 
 	data, err := os.ReadFile(absPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+		return nil, fmt.Errorf("failed to read pCfg file: %w", err)
 	}
 
-	var config PreCommitConfig
-	config.logger = p.logger
-	if err := yaml.Unmarshal(data, &config); err != nil {
+	var pCfg PreCommitConfig
+	pCfg.logger = p.logger
+	if err := yaml.Unmarshal(data, &pCfg); err != nil {
 		return nil, fmt.Errorf("failed to parse yaml: %w", err)
 	}
 
-	err = config.Validate()
+	err = pCfg.Validate()
 	if err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 
-	config.PopulateSemVer()
+	pCfg.PopulateSemVer()
 
-	return &config, nil
+	return &pCfg, nil
 }
 
 // validatePath checks if the provided configPath is valid and exists.

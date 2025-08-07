@@ -3,6 +3,9 @@ package bumper
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
@@ -124,22 +127,53 @@ func (b *Bumper) checkSingleRepo(repo parser.Repo, updater RepoBumper) UpdateRes
 	}
 }
 
-func isNewerVersion(current, latest *parser.SemanticVersion) bool {
-	if current == nil || latest == nil {
-		return false
+func (b *Bumper) writeSummary(results []UpdateResult) error {
+	summaryPath := "summary.md"
+
+	var buf strings.Builder
+	buf.WriteString("# Pre-commit Hook Update Summary\n\n")
+
+	for _, result := range results {
+		if result.UpdateRequired {
+			buf.WriteString(fmt.Sprintf("- ✅ **%s**: %s → %s\n",
+				result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String()))
+			buf.WriteString(fmt.Sprintf("See changelog at: %s/releases/tag/%s\n\n", result.Repo.Repo, result.LatestVersion.String()))
+		} else {
+			buf.WriteString(fmt.Sprintf("- ⏸️ **%s**: %s (up to date)\n",
+				result.Repo.Repo, result.Repo.Rev))
+		}
 	}
 
-	if latest.Major > current.Major {
-		return true
-	}
-	if latest.Major == current.Major && latest.Minor > current.Minor {
-		return true
-	}
-	if latest.Major == current.Major && latest.Minor == current.Minor && latest.Patch > current.Patch {
-		return true
+	return os.WriteFile(summaryPath, []byte(buf.String()), 0644)
+}
+
+func (b *Bumper) writePreCommitChanges(results []UpdateResult) error {
+	data, err := os.ReadFile(b.cfg.PreCommitConfigPath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	return false
+	content := string(data)
+
+	for _, result := range results {
+		if !result.UpdateRequired || result.Error != nil {
+			continue
+		}
+
+		repoURL := regexp.QuoteMeta(result.Repo.Repo)
+		currentRev := regexp.QuoteMeta(result.Repo.SemVer.String())
+		newRev := result.LatestVersion.String()
+
+		pattern := fmt.Sprintf(`(repo:\s+%s\s+rev:\s+)%s`, repoURL, currentRev)
+		replacement := fmt.Sprintf("${1}%s", newRev)
+
+		re := regexp.MustCompile(pattern)
+		content = re.ReplaceAllString(content, replacement)
+
+		b.cfg.Logger.Sugar().Debugf("Updated %s from %s to %s", result.Repo.Repo, result.Repo.Rev, newRev)
+	}
+
+	return os.WriteFile(b.cfg.PreCommitConfigPath, []byte(content), 0644)
 }
 
 func (b *Bumper) processCheckResults(results []UpdateResult) error {
@@ -156,7 +190,7 @@ func (b *Bumper) processCheckResults(results []UpdateResult) error {
 		if result.UpdateRequired {
 			hasUpdates = true
 			b.cfg.Logger.Sugar().Infof("Update available for %s: %s -> %s",
-				result.Repo.Repo, result.Repo.Rev, formatVersion(result.LatestVersion))
+				result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String())
 		}
 	}
 
@@ -172,43 +206,53 @@ func (b *Bumper) processCheckResults(results []UpdateResult) error {
 }
 
 func (b *Bumper) processUpdateResults(results []UpdateResult) error {
-	// todo error handling and logging
+	var hasUpdates bool
+	var errs []error
 
-	if b.cfg.DryRun {
-		// log about dry-run
-		b.cfg.Logger.Sugar().Debugf("not implemented yet")
-	} else {
-		// write config changes back to file
-		b.cfg.Logger.Sugar().Debugf("not implemented yet")
+	for _, result := range results {
+		if result.Error != nil {
+			b.cfg.Logger.Sugar().Warnf("Error checking %s: %v", result.Repo.Repo, result.Error)
+			errs = append(errs, result.Error)
+			continue
+		}
+
+		if result.UpdateRequired {
+			hasUpdates = true
+			b.cfg.Logger.Sugar().Infof("Update available for %s: %s -> %s",
+				result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String())
+		}
 	}
 
-	if b.cfg.NoSummary {
-		b.cfg.Logger.Sugar().Info("No summary generation requested, skipping summary file creation")
-	} else {
-		// generate summary file
-		b.cfg.Logger.Sugar().Debugf("not implemented yet")
+	if len(errs) > 0 {
+		return fmt.Errorf("errors occurred while checking repositories: %v", errs)
+	}
+
+	if hasUpdates && !b.cfg.DryRun {
+		err := b.writePreCommitChanges(results)
+		if err != nil {
+			return fmt.Errorf("failed to write pre-commit changes: %w", err)
+		}
+		b.cfg.Logger.Sugar().Info("Pre-commit configuration file updated successfully")
+
+		if !b.cfg.NoSummary {
+			err = b.writeSummary(results)
+			if err != nil {
+				return fmt.Errorf("failed to write summary: %w", err)
+			}
+			b.cfg.Logger.Sugar().Info("Summary file created successfully")
+		} else {
+			b.cfg.Logger.Sugar().Info("No summary generation requested, skipping summary file creation")
+		}
+	} else if b.cfg.DryRun {
+		b.cfg.Logger.Sugar().Info("Dry run mode enabled, will not modify the pre-commit-config.yaml file or create a summary")
 	}
 
 	return nil
 }
 
-func formatVersion(v *parser.SemanticVersion) string {
-	if v == nil {
-		return "unknown"
-	}
-	version := fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
-	if v.PreRelease != "" {
-		version += "-" + v.PreRelease
-	}
-	if v.BuildMetaData != "" {
-		version += "+" + v.BuildMetaData
-	}
-	return version
-}
-
 // findLatestVersion iterating through the GitHub tags to find the latest semantic version.
 // It returns the latest version found or an error if no valid semantic versions are present.
-func findLatestVersionGeneric[T TagProvider](tags []T, repo *parser.Repo) (*parser.SemanticVersion, error) {
+func findLatestVersion[T TagProvider](tags []T, repo *parser.Repo) (*parser.SemanticVersion, error) {
 	var latest *parser.SemanticVersion
 
 	for _, tag := range tags {
@@ -217,8 +261,8 @@ func findLatestVersionGeneric[T TagProvider](tags []T, repo *parser.Repo) (*pars
 			continue
 		}
 
-		if latest == nil || isNewerVersion(latest, &semVer) {
-			latest = &semVer
+		if latest == nil || isNewerVersion(latest, semVer) {
+			latest = semVer
 		}
 	}
 
@@ -227,4 +271,23 @@ func findLatestVersionGeneric[T TagProvider](tags []T, repo *parser.Repo) (*pars
 	}
 
 	return latest, nil
+}
+
+// isNewerVersion checks if the latest version is newer than the current version.
+func isNewerVersion(current, latest *parser.SemanticVersion) bool {
+	if current == nil || latest == nil {
+		return false
+	}
+
+	if latest.Major > current.Major {
+		return true
+	}
+	if latest.Major == current.Major && latest.Minor > current.Minor {
+		return true
+	}
+	if latest.Major == current.Major && latest.Minor == current.Minor && latest.Patch > current.Patch {
+		return true
+	}
+
+	return false
 }

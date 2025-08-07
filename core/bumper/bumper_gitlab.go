@@ -45,7 +45,7 @@ func (g *GitLabBumper) GetLatestVersion(repo *parser.Repo) (*parser.SemanticVers
 		return nil, err
 	}
 
-	return findLatestVersionGeneric(tags, repo)
+	return findLatestVersion(tags, repo)
 }
 
 // fetchTags retrieves the tags from a GitLab repository using the GitLab API.
