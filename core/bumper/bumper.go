@@ -176,7 +176,9 @@ func (b *Bumper) writePreCommitChanges(results []UpdateResult) error {
 	return os.WriteFile(b.cfg.PreCommitConfigPath, []byte(content), 0644)
 }
 
-func (b *Bumper) processCheckResults(results []UpdateResult) error {
+// processResults handles common error checking and logging
+// returns a boolean indicating if updates are available in any of the hooks or an error if any occurred.
+func (b *Bumper) processResults(results []UpdateResult) (bool, error) {
 	var hasUpdates bool
 	var errs []error
 
@@ -195,36 +197,28 @@ func (b *Bumper) processCheckResults(results []UpdateResult) error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("errors occurred while checking repositories: %v", errs)
+		return false, fmt.Errorf("errors occurred while checking repositories: %v", errs)
+	}
+
+	return hasUpdates, nil
+}
+
+func (b *Bumper) processCheckResults(results []UpdateResult) error {
+	hasUpdates, err := b.processResults(results)
+	if err != nil {
+		return err
 	}
 
 	if hasUpdates {
 		return fmt.Errorf("updates are available")
 	}
-
 	return nil
 }
 
 func (b *Bumper) processUpdateResults(results []UpdateResult) error {
-	var hasUpdates bool
-	var errs []error
-
-	for _, result := range results {
-		if result.Error != nil {
-			b.cfg.Logger.Sugar().Warnf("Error checking %s: %v", result.Repo.Repo, result.Error)
-			errs = append(errs, result.Error)
-			continue
-		}
-
-		if result.UpdateRequired {
-			hasUpdates = true
-			b.cfg.Logger.Sugar().Infof("Update available for %s: %s -> %s",
-				result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String())
-		}
-	}
-
-	if len(errs) > 0 {
-		return fmt.Errorf("errors occurred while checking repositories: %v", errs)
+	hasUpdates, err := b.processResults(results)
+	if err != nil {
+		return err
 	}
 
 	if hasUpdates && !b.cfg.DryRun {
