@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
 	"go.uber.org/zap"
@@ -16,6 +17,17 @@ type Repo struct {
 	Repo   string `yaml:"repo"`
 	Rev    string `yaml:"rev"`
 	SemVer *SemanticVersion
+}
+
+// GetVendor determines the vendor of the repository based on its URL.
+func (r *Repo) GetVendor() string {
+	vendor := ""
+	if strings.Contains(r.Repo, "github.com") {
+		vendor = config.VendorGitHub
+	} else if strings.Contains(r.Repo, "gitlab.com") {
+		vendor = config.VendorGitLab
+	}
+	return vendor
 }
 
 // PreCommitConfig represents the entire pre-commit configuration file.
@@ -72,6 +84,9 @@ func (config *PreCommitConfig) ValidRepos() []Repo {
 		}
 		validRepos = append(validRepos, repo)
 	}
+
+	config.logger.Sugar().Debugf("total_repos: %d, valid_repos: %d", len(config.Repos), len(validRepos))
+
 	return validRepos
 }
 
@@ -86,6 +101,7 @@ type SemanticVersion struct {
 
 // GetSemanticVersion parses a version string and return a SemanticVersion struct if it matches the semantic versioning format.
 func GetSemanticVersion(version string) (SemanticVersion, bool) {
+	// TODO(ramon): Maybe return a pointer here instead of by value?
 	re := regexp.MustCompile(config.ReSemanticVersion)
 	match := re.FindStringSubmatch(version)
 	if match == nil {

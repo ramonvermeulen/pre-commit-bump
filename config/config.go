@@ -14,8 +14,8 @@ import (
 
 // Config holds all configuration values for the pre-commit bumper tool
 type Config struct {
-	// ConfigPath is the path to the pre-commit configuration file
-	ConfigPath string
+	// PreCommitConfigPath is the path to the pre-commit configuration file
+	PreCommitConfigPath string
 
 	// NoSummary disables summary generation (update command only)
 	NoSummary bool
@@ -70,11 +70,11 @@ func FromViper() (*Config, error) {
 	logLevel := getLogLevel()
 
 	return &Config{
-		ConfigPath: configPath,
-		NoSummary:  noSummary,
-		DryRun:     dryRun,
-		LogLevel:   logLevel,
-		Logger:     newLogger(logLevel),
+		PreCommitConfigPath: configPath,
+		NoSummary:           noSummary,
+		DryRun:              dryRun,
+		LogLevel:            logLevel,
+		Logger:              newLogger(logLevel),
 	}, nil
 }
 

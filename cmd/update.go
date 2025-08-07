@@ -35,7 +35,7 @@ func runUpdate(cmd *cobra.Command, args []string) {
 	}
 
 	cfg.Logger.Sugar().Debugf("Starting update command - config_path: %s, dry_run: %t, no_summary: %t",
-		cfg.ConfigPath, cfg.DryRun, cfg.NoSummary)
+		cfg.PreCommitConfigPath, cfg.DryRun, cfg.NoSummary)
 
 	p := parser.NewParser(cfg.Logger)
 	bmp := bumper.NewBumper(p, cfg)
