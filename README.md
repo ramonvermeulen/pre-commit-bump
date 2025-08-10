@@ -1,19 +1,16 @@
 # pre-commit-bump
-Tool to automatically bump the pre-commit hook versions in your `.pre-commit-config.yaml` file.
+Dev tool to automatically bump the pre-commit hook versions in your `.pre-commit-config.yaml` file.
 Mainly build for learning purposes, but can be useful for automating the process of updating pre-commit hooks.
-As of the time of writing, dependabot does not support pre-commit hooks, so this tool can be used as a workaround.
 
-## Installation
-
-...
+Can be used with GitHub Actions to automatically bump the pre-commit hook versions in your `.pre-commit-config.yaml` file.
 
 ## Basic Usage
 
-...
+t.b.d.
 
-## Use with Github Actions
+## Use with GitHub Actions
 
-...
+t.b.d.
 
 
 ### Environment Variables
@@ -22,4 +19,3 @@ As of the time of writing, dependabot does not support pre-commit hooks, so this
 
 ## Contributing
 Contributions are welcome! Please create an issue or a pull request if you have any suggestions or improvements.
-I cannot guarantee that I will respond to issues or pull requests, but I will try my best to do so.
