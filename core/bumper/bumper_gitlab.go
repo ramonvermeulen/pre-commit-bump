@@ -84,7 +84,7 @@ func extractGitLabRepo(repoURL string) string {
 
 	if idx := strings.Index(repoURL, config.VendorGitLabHost); idx != -1 {
 		// +1 works for both https and ssh because of the `:` or `/` after the host
-		repoPath = repoURL[idx+len(config.VendorGitHubHost)+1:]
+		repoPath = repoURL[idx+len(config.VendorGitLabHost)+1:]
 	}
 
 	return repoPath
