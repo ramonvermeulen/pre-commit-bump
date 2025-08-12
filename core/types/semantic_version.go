@@ -56,10 +56,10 @@ func (s *SemanticVersion) String() string {
 	return version
 }
 
-// IsNewerVersionThan compares the current SemanticVersion with another SemanticVersion.
-// It returns true if the current version is newer than the other version, false otherwise.
+// IsNewerVersionThan compares the newVersion SemanticVersion with another SemanticVersion.
+// It returns true if the newVersion version is newer than the currentVersion version, false otherwise.
 func (s *SemanticVersion) IsNewerVersionThan(other *SemanticVersion) bool {
-	if other == nil {
+	if s == nil || other == nil {
 		return false
 	}
 
@@ -76,8 +76,8 @@ func (s *SemanticVersion) IsNewerVersionThan(other *SemanticVersion) bool {
 	return false
 }
 
-// GetBumpType determines the type of version bump between the current SemanticVersion and another SemanticVersion.
-// It returns "major", "minor", or "patch" if the current version is newer than the other version.
+// GetBumpType determines the type of version bump between the newVersion SemanticVersion and another SemanticVersion.
+// It returns "major", "minor", or "patch" if the newVersion version is newer than the currentVersion version.
 func (s *SemanticVersion) GetBumpType(other *SemanticVersion) string {
 	if other == nil {
 		return ""
@@ -96,16 +96,19 @@ func (s *SemanticVersion) GetBumpType(other *SemanticVersion) string {
 	return ""
 }
 
-// IsAllowedBump checks if the current SemanticVersion is allowed to be bumped to the other SemanticVersion
+// IsAllowedBumpFrom checks if the newVersion SemanticVersion is allowed to be bumped from the currentVersion SemanticVersion
 // based on the allowed bump type. It returns true if the bump is allowed, false otherwise.
-func (s *SemanticVersion) IsAllowedBump(other *SemanticVersion, allowedBumpType string) bool {
-	if allowedBumpType == "major" {
-		return true
+// allowedBumpType can be "major", "minor", or "patch".
+func (s *SemanticVersion) IsAllowedBumpFrom(other *SemanticVersion, allowedBumpType string) bool {
+	if other == nil || s == nil {
+		return false
 	}
 
 	bumpType := s.GetBumpType(other)
 
 	switch allowedBumpType {
+	case "major":
+		return bumpType == "major" || bumpType == "minor" || bumpType == "patch"
 	case "minor":
 		return bumpType == "minor" || bumpType == "patch"
 	case "patch":
