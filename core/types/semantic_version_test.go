@@ -2,6 +2,8 @@ package types
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSemanticVersionEdgeCases(t *testing.T) {
@@ -124,30 +126,17 @@ func TestSemanticVersionEdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result, ok := GetSemanticVersion(tt.version)
 
-			if ok != tt.valid {
-				t.Errorf("GetSemanticVersion(%q) valid = %v, want %v", tt.version, ok, tt.valid)
-				return
-			}
+			assert.Equal(t, tt.valid, ok, "GetSemanticVersion(%q) validity", tt.version)
 
 			if !tt.valid {
 				return
 			}
 
-			if result.Major != tt.expected.Major {
-				t.Errorf("GetSemanticVersion(%q) Major = %d, want %d", tt.version, result.Major, tt.expected.Major)
-			}
-			if result.Minor != tt.expected.Minor {
-				t.Errorf("GetSemanticVersion(%q) Minor = %d, want %d", tt.version, result.Minor, tt.expected.Minor)
-			}
-			if result.Patch != tt.expected.Patch {
-				t.Errorf("GetSemanticVersion(%q) Patch = %d, want %d", tt.version, result.Patch, tt.expected.Patch)
-			}
-			if result.PreRelease != tt.expected.PreRelease {
-				t.Errorf("GetSemanticVersion(%q) PreRelease = %q, want %q", tt.version, result.PreRelease, tt.expected.PreRelease)
-			}
-			if result.BuildMetaData != tt.expected.BuildMetaData {
-				t.Errorf("GetSemanticVersion(%q) BuildMetaData = %q, want %q", tt.version, result.BuildMetaData, tt.expected.BuildMetaData)
-			}
+			assert.Equal(t, tt.expected.Major, result.Major, "Major version mismatch")
+			assert.Equal(t, tt.expected.Minor, result.Minor, "Minor version mismatch")
+			assert.Equal(t, tt.expected.Patch, result.Patch, "Patch version mismatch")
+			assert.Equal(t, tt.expected.PreRelease, result.PreRelease, "PreRelease mismatch")
+			assert.Equal(t, tt.expected.BuildMetaData, result.BuildMetaData, "BuildMetaData mismatch")
 		})
 	}
 }
@@ -196,14 +185,11 @@ func TestSemanticVersionComparison(t *testing.T) {
 			v1, ok1 := GetSemanticVersion(tt.version1)
 			v2, ok2 := GetSemanticVersion(tt.version2)
 
-			if !ok1 || !ok2 {
-				t.Fatalf("Failed to parse versions: %q, %q", tt.version1, tt.version2)
-			}
+			assert.True(t, ok1, "Failed to parse version1: %q", tt.version1)
+			assert.True(t, ok2, "Failed to parse version2: %q", tt.version2)
 
 			result := v1.IsNewerVersionThan(v2)
-			if result != tt.expected {
-				t.Errorf("IsNewerVersionThan(%q, %q) = %v, want %v", tt.version1, tt.version2, result, tt.expected)
-			}
+			assert.Equal(t, tt.expected, result, "IsNewerVersionThan(%q, %q)", tt.version1, tt.version2)
 		})
 	}
 }
@@ -358,24 +344,19 @@ func TestSemanticVersionIsAllowedBump(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			current, okCurrent := GetSemanticVersion(tt.newVersion)
-			if !okCurrent {
-				t.Fatalf("Failed to parse newVersion version: %q", tt.newVersion)
-			}
+			assert.True(t, okCurrent, "Failed to parse newVersion version: %q", tt.newVersion)
 
 			var other *SemanticVersion
 			if tt.currentVersion != "" {
 				var okOther bool
 				other, okOther = GetSemanticVersion(tt.currentVersion)
-				if !okOther {
-					t.Fatalf("Failed to parse currentVersion version: %q", tt.currentVersion)
-				}
+				assert.True(t, okOther, "Failed to parse currentVersion version: %q", tt.currentVersion)
 			}
 
 			result := current.IsAllowedBumpFrom(other, tt.allowedType)
-			if result != tt.expected {
-				t.Errorf("IsAllowedBumpFrom(%q, %q, %q) = %v, want %v - %s",
-					tt.newVersion, tt.currentVersion, tt.allowedType, result, tt.expected, tt.description)
-			}
+			assert.Equal(t, tt.expected, result,
+				"IsAllowedBumpFrom(%q, %q, %q) - %s",
+				tt.newVersion, tt.currentVersion, tt.allowedType, tt.description)
 		})
 	}
 }

@@ -6,9 +6,10 @@ import (
 	"net/http"
 	url2 "net/url"
 	"os"
-	"strings"
+	"regexp"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
+	"github.com/ramonvermeulen/pre-commit-bump/core/utils"
 
 	"github.com/ramonvermeulen/pre-commit-bump/core/types"
 )
@@ -77,15 +78,7 @@ func (g *GitLabBumper) fetchTags(url string) ([]GitLabTag, error) {
 
 // extractGitLabRepo extracts the owner and repository name from a GitLab repository URL.
 func extractGitLabRepo(repoURL string) string {
-	repoURL = strings.TrimSuffix(repoURL, ".git")
-	repoURL = strings.TrimSuffix(repoURL, "/")
-
-	var repoPath string
-
-	if idx := strings.Index(repoURL, config.VendorGitLabHost); idx != -1 {
-		// +1 works for both https and ssh because of the `:` or `/` after the host
-		repoPath = repoURL[idx+len(config.VendorGitLabHost)+1:]
-	}
-
-	return repoPath
+	re := regexp.MustCompile(config.ReGitLabRepoName)
+	matches := re.FindStringSubmatch(repoURL)
+	return utils.GetGroup(re, matches, "repo_name")
 }

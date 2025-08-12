@@ -20,8 +20,10 @@ const (
 // Supported vendors for pre-commit hooks
 const (
 	VendorGitHub     = "github"
+	ReGitHubRepoName = `github\.com[:/](?<repo_name>[^/.?#]+/[^/.?\n\s#]+)`
 	VendorGitHubHost = "github.com"
 	VendorGitLab     = "gitlab"
+	ReGitLabRepoName = `gitlab\.com[:/](?<repo_name>[^?#\n\s/]+(?:/[^?#\n\s/.]+)*)`
 	VendorGitLabHost = "gitlab.com"
 )
 

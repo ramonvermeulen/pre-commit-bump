@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
+
+	"github.com/ramonvermeulen/pre-commit-bump/core/utils"
 
 	"github.com/ramonvermeulen/pre-commit-bump/config"
 
@@ -78,14 +81,7 @@ func (g *GithubBumper) fetchTags(repoPath string) ([]GitHubTag, error) {
 // extractGitHubRepo extracts the owner and repository name from a GitHub repository URL.
 // It handles both HTTPS and SSH formats, and removes the ".git" suffix if present.
 func extractGitHubRepo(repoURL string) string {
-	repoURL = strings.TrimSuffix(repoURL, ".git")
-	repoURL = strings.TrimSuffix(repoURL, "/")
-
-	var repoPath string
-	if idx := strings.Index(repoURL, config.VendorGitHubHost); idx != -1 {
-		// +1 works for both https and ssh because of the `:` or `/` after the host
-		repoPath = repoURL[idx+len(config.VendorGitHubHost)+1:]
-	}
-
-	return repoPath
+	re := regexp.MustCompile(config.ReGitHubRepoName)
+	matches := re.FindStringSubmatch(repoURL)
+	return utils.GetGroup(re, matches, "repo_name")
 }

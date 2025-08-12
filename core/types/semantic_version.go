@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/ramonvermeulen/pre-commit-bump/core/utils"
+
 	"github.com/ramonvermeulen/pre-commit-bump/config"
 )
 
@@ -25,11 +27,11 @@ func GetSemanticVersion(version string) (*SemanticVersion, bool) {
 		return &SemanticVersion{}, false
 	}
 
-	major, err1 := strconv.Atoi(getGroup(re, match, "major"))
-	minor, err2 := strconv.Atoi(getGroup(re, match, "minor"))
-	patch, err3 := strconv.Atoi(getGroup(re, match, "patch"))
-	preRelease := getGroup(re, match, "prerelease")
-	buildMetadata := getGroup(re, match, "buildmetadata")
+	major, err1 := strconv.Atoi(utils.GetGroup(re, match, "major"))
+	minor, err2 := strconv.Atoi(utils.GetGroup(re, match, "minor"))
+	patch, err3 := strconv.Atoi(utils.GetGroup(re, match, "patch"))
+	preRelease := utils.GetGroup(re, match, "prerelease")
+	buildMetadata := utils.GetGroup(re, match, "buildmetadata")
 
 	if err1 != nil || err2 != nil || err3 != nil {
 		return &SemanticVersion{}, false
@@ -116,12 +118,4 @@ func (s *SemanticVersion) IsAllowedBumpFrom(other *SemanticVersion, allowedBumpT
 	}
 
 	return false
-}
-
-func getGroup(re *regexp.Regexp, match []string, name string) string {
-	index := re.SubexpIndex(name)
-	if index == -1 || index >= len(match) {
-		return ""
-	}
-	return match[index]
 }
