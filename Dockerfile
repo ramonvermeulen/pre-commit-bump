@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS build
+FROM golang:1.25-alpine AS build
 
 WORKDIR /app
 
@@ -14,5 +14,8 @@ FROM alpine:edge
 WORKDIR /app
 
 COPY --from=build /app/pre-commit-bump .
+COPY gha-entrypoint.sh /app/gha-entrypoint.sh
 
-ENTRYPOINT ["/app/pre-commit-bump"]
+RUN chmod +x /app/gha-entrypoint.sh
+
+ENTRYPOINT ["/app/gha-entrypoint.sh"]
