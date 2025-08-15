@@ -33,3 +33,5 @@ go.work.sum
 
 # the binary from `go build`
 pre-commit-bump
+
+local_testing/
