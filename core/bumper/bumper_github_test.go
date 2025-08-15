@@ -37,6 +37,11 @@ func TestExtractGitHubRepo(t *testing.T) {
 			repoURL:  "https://github.com/owner/repo?ref=main",
 			expected: "owner/repo",
 		},
+		{
+			name:     "Wrong vendor URL",
+			repoURL:  "https://gitlab.com/owner/repo",
+			expected: "",
+		},
 	}
 
 	for _, tt := range tests {

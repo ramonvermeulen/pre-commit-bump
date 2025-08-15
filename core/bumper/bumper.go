@@ -220,7 +220,7 @@ func (b *Bumper) processUpdateResults(results []types.UpdateResult) error {
 	return nil
 }
 
-// findLatestVersion iterating through the GitHub tags to find the latest semantic version.
+// findLatestVersion iterating through the Vendor tags to find the latest semantic version.
 // It returns the latest version found or an error if no valid semantic versions are present.
 func findLatestVersion[T TagProvider](tags []T, repo *types.Repo) (*types.SemanticVersion, error) {
 	var latest *types.SemanticVersion
