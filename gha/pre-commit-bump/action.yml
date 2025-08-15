@@ -1,0 +1,44 @@
+name: pre-commit-bump
+description: GHA to bump pre-commit versions in a repository
+author: Ramon Vermeulen
+
+branding:
+  icon: arrow-up-right
+  color: yellow
+
+inputs:
+  command:
+    description: Command to run, can be either `update` or `check`.
+    default: update
+    required: false
+  allow:
+    description: Specific semantic versioning range to allow updates for (major, minor, patch), uses major if not specified.
+    default: major
+    required: false
+  verbose:
+    description: Whether to run in verbose mode.
+    default: "false"
+    required: false
+  config:
+    description: Path to the pre-commit configuration file, uses `.pre-commit-config.yaml` if not specified.
+    default: .pre-commit-config.yaml
+    required: false
+  no-summary:
+    description: Whether to skip the summary output.
+    required: false
+    default: "false"
+  dry-run:
+    description: Whether to perform a dry run without making changes.
+    required: false
+    default: "false"
+
+runs:
+  using: docker
+  image: Dockerfile
+  env:
+    INPUT_COMMAND: ${{ inputs.who-to-greet }}
+    INPUT_ALLOW: ${{ inputs.allow }}
+    INPUT_VERBOSE: ${{ inputs.verbose }}
+    INPUT_CONFIG: ${{ inputs.config }}
+    INPUT_NO_SUMMARY: ${{ inputs.no-summary }}
+    INPUT_DRY_RUN: ${{ inputs.dry-run }}

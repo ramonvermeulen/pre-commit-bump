@@ -21,11 +21,10 @@ t.b.d.
 
 ## Basic Usage
 
-t.b.d.
-
-## Environment Variables
-- `PCB_LOG_LEVEL`: Set the log level for pre-commit-bump. Default is `INFO`. Mainly used for debugging and development 
- purposes and is not intended to be used by the end-user.
+To use `pre-commit-bump`, simply run the command in the root of your repository:
+```bash
+pre-commit-bump --help
+```
 
 ## Contributing
 Contributions are welcome! Please create an issue or a pull request if you have any suggestions or improvements.
