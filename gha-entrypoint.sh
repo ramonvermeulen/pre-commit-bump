@@ -33,4 +33,4 @@ ARGS="${INPUT_COMMAND} --allow=${INPUT_ALLOW}"
 [ "${INPUT_NO_SUMMARY}" = "true" ] && ARGS="$ARGS --no-summary"
 [ "${INPUT_DRY_RUN}" = "true" ] && ARGS="$ARGS --dry-run"
 
-exec pre-commit-bump $ARGS
+exec /app/pre-commit-bump $ARGS
