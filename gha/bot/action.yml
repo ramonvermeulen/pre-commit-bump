@@ -1,5 +1,5 @@
-name: pre-commit-bump
-description: GHA to bump pre-commit versions in a repository.
+name: pre-commit-bump-bot
+description: GHA to bump pre-commit versions in a repository and create a pull request with the changes.
 author: Ramon Vermeulen
 
 branding:
@@ -33,13 +33,24 @@ inputs:
     default: "false"
 
 runs:
-  using: docker
-  # TODO(ramon): move to upstream github docker container registry
-  image: Dockerfile
-  env:
-    INPUT_COMMAND: ${{ inputs.command }}
-    INPUT_ALLOW: ${{ inputs.allow }}
-    INPUT_VERBOSE: ${{ inputs.verbose }}
-    INPUT_CONFIG: ${{ inputs.config }}
-    INPUT_NO_SUMMARY: ${{ inputs.no-summary }}
-    INPUT_DRY_RUN: ${{ inputs.dry-run }}
+  using: composite
+  steps:
+    - name: Run pre-commit-bump
+      uses: ramonvermeulen/pre-commit-bump@ramon/gha-support
+      with:
+        command: ${{ inputs.command }}
+        allow: ${{ inputs.allow }}
+        verbose: ${{ inputs.verbose }}
+        config: ${{ inputs.config }}
+        no-summary: ${{ inputs.no-summary }}
+        dry-run: ${{ inputs.dry-run }}
+
+    - name: Create Pull Request with bumped pre-commit versions
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: "chore(pre-commit): bump pre-commit versions"
+        title: "chore(pre-commit): bump pre-commit versions"
+        add-paths: |
+          ${{ inputs.config }}
+        branch: chore/pre-commit-bump
+        body-path: summary.md

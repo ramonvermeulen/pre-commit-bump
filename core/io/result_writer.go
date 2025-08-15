@@ -65,9 +65,8 @@ func (s *ResultWriter) WritePreCommitChanges(configPath string, results []types.
 		currentRev := regexp.QuoteMeta(result.Repo.SemVer.String())
 		newRev := result.LatestVersion.String()
 
-		pattern := fmt.Sprintf(`(repo:\s+%s\s+rev:\s+)%s`, repoURL, currentRev)
+		pattern := fmt.Sprintf(`(repo:\s+%s\s+rev:\s+?[a-zA-Z]?)%s`, repoURL, currentRev)
 		replacement := fmt.Sprintf("${1}%s", newRev)
-
 		re := regexp.MustCompile(pattern)
 		content = re.ReplaceAllString(content, replacement)
 
