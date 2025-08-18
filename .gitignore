@@ -33,5 +33,6 @@ go.work.sum
 
 # the binary from `go build`
 pre-commit-bump
+!gha/bot/
 
 local_testing/
