@@ -40,6 +40,10 @@ Unfortunately, __this will not work for private repositories on the GitHub free 
 
 _"Draft pull requests are available in public repositories with GitHub Free and GitHub Free for organizations, GitHub Pro, and legacy per-repository billing plans, and in public and private repositories with GitHub Team and GitHub Enterprise Cloud."_
 
+Also ensure the following setting is enabled in your repository settings -> actions -> general:
+
+![setting.png](.github/docs/setting.png)
+
 ```yaml
 name: Bump pre-commit hooks
 
@@ -68,6 +72,11 @@ jobs:
           allow: major
           verbose: true
 ```
+
+Example of a pull request created by the action:
+![example_1.png](.github/docs/example_1.png)
+
+![example_2.png](.github/docs/example_2.png)
 
 ### 2) pre-commit-bump standalone action
 The standalone action is mostly used for checking the pre-commit hooks without creating a pull request.
