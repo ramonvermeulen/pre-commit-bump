@@ -26,7 +26,7 @@ jobs:
         uses: battila7/get-version-action@v2
 
       - name: Log in to the Container registry
-        if: get_version.is-semver
+        if: ${{ steps.get_version.outputs.is-semver == 'true' }}
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v6
-        if: get_version.is-semver
+        if: ${{ steps.get_version.outputs.is-semver == 'true' }}
         with:
           push: true
           platforms: linux/amd64
