@@ -1,0 +1,26 @@
+name: Bump pre-commit hooks
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Every day at midnight
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  pre-commit-bump:
+    name: Run pre-commit-bump
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update pre-commit hooks
+        uses: ramonvermeulen/pre-commit-bump/gha/bot@v1
+        with:
+          command: update
+          allow: major
+          verbose: true
