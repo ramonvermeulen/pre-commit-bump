@@ -17,7 +17,7 @@ go install github.com/ramonvermeulen/pre-commit-bump@latest
 
 ## Basic Usage
 
-To use `pre-commit-bump`, simply run the command in the root of your repository:
+To use `pre-commit-bump`, run the command in the root of your repository:
 ```bash
 pre-commit-bump update
 ```
@@ -36,6 +36,9 @@ There are two ways to use `pre-commit-bump` in your GitHub Actions workflow:
 
 This action combines the `ramonvermeulen/pre-commit-bump` action with the `peter-evans/create-pull-request` [action](https://github.com/marketplace/actions/create-pull-request)
 to automatically create a pull request with the updated pre-commit hook versions.
+Unfortunately, __this will not work for private repositories on the GitHub free plan__.
+
+_"Draft pull requests are available in public repositories with GitHub Free and GitHub Free for organizations, GitHub Pro, and legacy per-repository billing plans, and in public and private repositories with GitHub Team and GitHub Enterprise Cloud."_
 
 ```yaml
 name: Bump pre-commit hooks
@@ -69,7 +72,7 @@ jobs:
 ### 2) pre-commit-bump standalone action
 The standalone action is mostly used for checking the pre-commit hooks without creating a pull request.
 This is useful for CI/CD pipelines to ensure that the pre-commit hooks are up-to-date, the action will fail if there 
-are updates available.
+are updates available. The potential updates will be logged in the GitHub actions log.
 
 ```yaml
 name: Check pre-commit hooks
@@ -95,6 +98,19 @@ jobs:
           allow: major
           verbose: true
 ```
+
+### Action inputs
+
+All inputs are **optional**. If not set, sensible defaults will be used.
+
+| Name         | Description                                                                                    | Default                  |
+|--------------|------------------------------------------------------------------------------------------------|--------------------------|
+| `command`    | Command to run, can be either `update` or `check`.                                             | `update`                 |
+| `allow`      | Specific semantic versioning range to allow updates for (`major`, `minor`, or `patch`).        | `major`                  |
+| `verbose`    | Whether to run in verbose mode.                                                                | `false`                  |
+| `config`     | Path to the pre-commit configuration file, uses `.pre-commit-config.yaml` if not specified.    | `pre-commit-config.yaml` |
+| `no-summary` | Whether to skip the summary output (generation of `summary.md` which is used as PR body).      | `false`                  |
+| `dry-run`    | Whether to perform a dry run without making changes to the pre-commit yaml configuration file. | `false`                  |
 
 ## Contributing
 Contributions are welcome! Please create an issue or a pull request if you have any suggestions or improvements.
