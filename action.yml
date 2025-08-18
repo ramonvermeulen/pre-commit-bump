@@ -34,7 +34,7 @@ inputs:
 
 runs:
   using: docker
-  image: ghcr.io/ramonvermeulen/pre-commit-bump:v0
+  image: ghcr.io/ramonvermeulen/pre-commit-bump:v1
   env:
     INPUT_COMMAND: ${{ inputs.command }}
     INPUT_ALLOW: ${{ inputs.allow }}
