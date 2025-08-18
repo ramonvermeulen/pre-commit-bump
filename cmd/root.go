@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.PersistentFlags().StringP(config.FlagConfig, "c", ".pre-commit-config.yaml", "Path to the pre-commit configuration file")
 	rootCmd.PersistentFlags().BoolP(config.FlagVerbose, "v", false, "Enable verbose logging output")
-	rootCmd.PersistentFlags().StringP(config.FlagAllow, "a", "major", "Version bump type to allow (major, minor, patch), default is 'major'")
+	rootCmd.PersistentFlags().StringP(config.FlagAllow, "a", "major", "Version bump type to allow (major, minor, patch)")
 
 	config.BindFlag(rootCmd.PersistentFlags(), config.FlagConfig)
 	config.BindFlag(rootCmd.PersistentFlags(), config.FlagVerbose)

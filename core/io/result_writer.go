@@ -27,21 +27,47 @@ func NewResultWriter(fs FileSystem, logger *zap.Logger) *ResultWriter {
 }
 
 // WriteSummary generates a summary of the updates and writes it to a markdown file
-func (s *ResultWriter) WriteSummary(results []types.UpdateResult) error {
+func (s *ResultWriter) WriteSummary(results []types.UpdateResult, allowLevel string) error {
 	summaryPath := "summary.md"
 
 	var buf strings.Builder
 	buf.WriteString("# Pre-commit Hook Update Summary\n\n")
+	buf.WriteString(fmt.Sprintf("**Update Policy**: Only %s version updates are allowed\n\n", allowLevel))
+
+	updatesApplied := 0
+	upToDate := 0
+	constrainedUpdates := 0
 
 	for _, result := range results {
 		if result.UpdateRequired {
-			buf.WriteString(fmt.Sprintf("- ✅ **%s**: %s → %s\n",
+			buf.WriteString(fmt.Sprintf("- 🔄 **%s**: %s → %s\n",
 				result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String()))
-			buf.WriteString(fmt.Sprintf("  See changelog at: %s/releases/tag/%s\n\n", result.Repo.Repo, result.LatestVersion.String()))
+			updatesApplied++
 		} else {
-			buf.WriteString(fmt.Sprintf("- ⏸️ **%s**: %s (up to date)\n",
-				result.Repo.Repo, result.Repo.Rev))
+			if result.LatestVersion != nil && result.Repo.SemVer != nil {
+				if result.LatestVersion.IsNewerVersionThan(result.Repo.SemVer) {
+					buf.WriteString(fmt.Sprintf("- ⚠️ **%s**: %s (newer version %s available but not allowed by %s policy)\n",
+						result.Repo.Repo, result.Repo.Rev, result.LatestVersion.String(), allowLevel))
+					constrainedUpdates++
+				} else {
+					buf.WriteString(fmt.Sprintf("- ✅ **%s**: %s (up to date)\n",
+						result.Repo.Repo, result.Repo.Rev))
+					upToDate++
+				}
+			} else {
+				buf.WriteString(fmt.Sprintf("- ✅ **%s**: %s (up to date)\n",
+					result.Repo.Repo, result.Repo.Rev))
+				upToDate++
+			}
 		}
+	}
+
+	buf.WriteString("---\n\n")
+	buf.WriteString("## Summary\n\n")
+	buf.WriteString(fmt.Sprintf("- 🔄 **%d** hooks updated\n", updatesApplied))
+	buf.WriteString(fmt.Sprintf("- ✅ **%d** hooks up to date\n", upToDate))
+	if constrainedUpdates > 0 {
+		buf.WriteString(fmt.Sprintf("- ⚠️ **%d** hooks have newer versions available (blocked by %s policy)\n", constrainedUpdates, allowLevel))
 	}
 
 	return s.fs.WriteFile(summaryPath, []byte(buf.String()), 0644)

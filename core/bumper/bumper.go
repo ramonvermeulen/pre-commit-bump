@@ -205,7 +205,7 @@ func (b *Bumper) processUpdateResults(results []types.UpdateResult) error {
 		b.cfg.Logger.Sugar().Info("Pre-commit configuration file updated successfully")
 
 		if !b.cfg.NoSummary {
-			err = b.fileWriter.WriteSummary(results)
+			err = b.fileWriter.WriteSummary(results, b.cfg.Allow)
 			if err != nil {
 				return fmt.Errorf("failed to write summary: %w", err)
 			}
