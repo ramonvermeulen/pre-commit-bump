@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Update pre-commit hooks
-        uses: ramonvermeulen/pre-commit-bump/gha/bot@v0
+        uses: ramonvermeulen/pre-commit-bump/gha/bot@v1
         with:
           command: update
           allow: major
@@ -92,7 +92,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Pre-Commit Bump
-        uses: ramonvermeulen/pre-commit-bump@v0
+        uses: ramonvermeulen/pre-commit-bump@v1
         with:
           command: check
           allow: major
