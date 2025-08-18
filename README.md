@@ -5,9 +5,6 @@
 Dev tool to automatically bump the pre-commit hook versions in your `.pre-commit-config.yaml` file.
 Mainly build for learning purposes, but can be useful for automating the process of updating pre-commit hooks.
 
-> [!WARNING]  
-> The pre-commit-bump tool is still in early development and not yet intended to be used.
-
 ## Installation
 You can install `pre-commit-bump` using `go install`:
 
