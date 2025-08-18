@@ -14,16 +14,25 @@ go install github.com/ramonvermeulen/pre-commit-bump@latest
 
 ## Basic Usage
 
-To use `pre-commit-bump`, run the command in the root of your repository:
-```bash
-pre-commit-bump update
 ```
-Or to only check for updates without applying them:
-```bash
-pre-commit-bump check
-```
+pre-commit-bump is a command-line tool designed to help you manage and update pre-commit hooks in your projects.
 
-Use `pre-commit-bump --help` to see all available commands and options.
+Usage:
+  pre-commit-bump [command]
+
+Available Commands:
+  check       Check for available updates without modifying the ".pre-commit-config.yaml" file
+  help        Help about any command
+  update      Check for available updates and modify the ".pre-commit-config.yaml" file
+
+Flags:
+  -a, --allow string    Version bump type to allow (major, minor, patch) (default "major")
+  -c, --config string   Path to the pre-commit configuration file (default ".pre-commit-config.yaml")
+  -h, --help            help for pre-commit-bump
+  -v, --verbose         Enable verbose logging output
+
+Use "pre-commit-bump [command] --help" for more information about a command.
+```
 
 ## GitHub Actions
 
