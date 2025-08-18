@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
       attestations: write
       id-token: write
@@ -39,6 +39,12 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.get_version.outputs.major }}
+
+      - name: Checkout code
+        if: ${{ steps.get_version.outputs.is-semver == 'true' }}
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Overwrite major tag
         if: ${{ steps.get_version.outputs.is-semver == 'true' }}
