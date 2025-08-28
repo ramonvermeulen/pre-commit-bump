@@ -45,8 +45,17 @@ runs:
         no-summary: ${{ inputs.no-summary }}
         dry-run: ${{ inputs.dry-run }}
 
+    - name: Check for summary file
+      id: check_summary
+      run: |
+        if [[ -f "summary.md" ]]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
     - name: Create Pull Request with bumped pre-commit versions
       uses: peter-evans/create-pull-request@v7
+      if: steps.check_summary.outputs.exists == 'true'
       with:
         commit-message: "chore(pre-commit): bump pre-commit versions"
         title: "chore(pre-commit): bump pre-commit versions"
