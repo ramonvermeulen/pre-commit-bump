@@ -37,7 +37,7 @@ jobs:
         if: ${{ steps.get_version.outputs.is-semver == 'true' }}
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:v${{ steps.get_version.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:${{ steps.get_version.outputs.version }}
 
       - name: Build and push - Normal
         uses: docker/build-push-action@v6
@@ -45,7 +45,7 @@ jobs:
         with:
           file: ./Dockerfile_gha
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.get_version.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
 
       - name: Checkout code
         if: ${{ steps.get_version.outputs.is-semver == 'true' }}
