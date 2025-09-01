@@ -36,6 +36,7 @@ jobs:
         uses: docker/build-push-action@v6
         if: ${{ steps.get_version.outputs.is-semver == 'true' }}
         with:
+          file: ./Dockerfile_gha
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-gha:${{ steps.get_version.outputs.version }}
 
@@ -43,7 +44,6 @@ jobs:
         uses: docker/build-push-action@v6
         if: ${{ steps.get_version.outputs.is-semver == 'true' }}
         with:
-          file: ./Dockerfile_gha
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.get_version.outputs.major }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.version }}
 
