@@ -1,0 +1,12 @@
+- id: pre-commit-bump
+  name: pre-commit-bump
+  description: Bump pre-commit hook versions in your repository.
+  language: docker_image
+  entry: ghcr.io/ramonvermeulen/pre-commit-bump:v1
+  pass_filenames: false
+  verbose: true
+  args:
+    - update
+    - --no-summary
+    - --verbose
+  always_run: true
