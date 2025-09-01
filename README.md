@@ -34,6 +34,19 @@ Flags:
 Use "pre-commit-bump [command] --help" for more information about a command.
 ```
 
+## pre-commit
+Ironically you can use `pre-commit-bump` as a pre-commit hook to always keep your pre-commit hooks up to date.
+Add the following to your .pre-commit-config.yaml:
+
+```yaml
+repos:
+  - repo: https://github.com/ramonvermeulen/pre-commit-bump
+    rev: v1.0.2
+    hooks:
+      - id: pre-commit-bump
+```
+
+By default, it runs with `pre-commit-bump update --no-summary --verbose`. You can override this by adding args to the hook configuration.
 ## GitHub Actions
 
 There are two ways to use `pre-commit-bump` in your GitHub Actions workflow:
